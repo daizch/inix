@@ -1,0 +1,38 @@
+{
+  "name": "inix",
+  "version": "0.1.0",
+  "description": "init whatever you want",
+  "keywords": [
+    "init",
+    "cli",
+    "inix"
+  ],
+  "script": {},
+  "bin": {
+    "inix": "bin/inix.js"
+  },
+  "author": "zechengdai",
+  "main": "index.js",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.9"
+  },
+  "dependencies": {
+    "async": "^3.1.0",
+    "chalk": "^2.4.2",
+    "commander": "^2.20.0",
+    "consolidate": "^0.15.1",
+    "cosmiconfig": "^5.2.1",
+    "download-git-repo": "^2.0.0",
+    "handlebars": "^4.1.2",
+    "inquirer": "^6.4.1",
+    "is-git-url": "^1.0.0",
+    "is-valid-path": "^0.1.1",
+    "metalsmith": "^2.3.0",
+    "ora": "^3.4.0",
+    "rimraf": "^2.6.3",
+    "tmp": "^0.1.0",
+    "update-notifier": "^3.0.0",
+    "user-home": "^2.0.0"
+  }
+}
