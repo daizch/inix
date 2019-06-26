@@ -1,11 +1,13 @@
 {
   "name": "inix",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "init whatever you want",
   "keywords": [
     "init",
     "cli",
-    "inix"
+    "inix",
+    "template",
+    "boilerplate"
   ],
   "script": {},
   "bin": {
@@ -15,7 +17,11 @@
   "main": "index.js",
   "license": "MIT",
   "engines": {
-    "node": ">=8.9"
+    "node": ">=8"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/daizch/inix.git"
   },
   "dependencies": {
     "async": "^3.1.0",
