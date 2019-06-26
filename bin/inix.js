@@ -7,10 +7,19 @@ const initTemplate = require('../lib/commands/init')
 const addTemplate = require('../lib/commands/add')
 const listTemplate = require('../lib/commands/list')
 const deleteTemplate = require('../lib/commands/delete')
+const setupTemplateList = require('../lib/commands/config')
 const pkg = require('../package.json')
 
 program
   .version(pkg.version)
+
+
+program
+.command('config <target>')
+.description('config template records path')
+.action(async function (target, options) {
+  await setupTemplateList(target, options)
+})
 
 /**
  * scaffold to init project

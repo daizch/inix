@@ -5,11 +5,12 @@
   - [installation](#installation)
   - [Getting Started](#Getting-Started)
   - [Commands](#Commands)
+    - [inix config](#inix-config)
     - [inix create](#inix-create)
     - [inix add](#inix-add)
     - [inix del](#inix-del)
     - [inix ls](#inix-ls)
-  - [Boilerplate Definition]()
+  - [Boilerplate Definition](#Boilerplate-Definition)
 
 ## About
 Everytime when you start a new project, firstly you will intilize the project by scaffold tool or some boilerplate. Now you just need to create your own boilerplate repo, then ``inix`` will help you finish  the rest things.
@@ -48,6 +49,21 @@ By default, it will show all existing boilerplates you can use when you.
 
 ```bash
 $ inix create 
+```
+
+### inix config
+Config the template records which can be used by ``inix create``
+
+use local path to setup template records
+
+```bash
+$ inix config ~/demo/template.json
+```
+
+or use a remote url
+
+```bash
+$ inix config http://xxx.xxx.com/path/template.json
 ```
 
 ### inix add
