@@ -3,7 +3,7 @@ const program = require('commander')
 const chalk = require('chalk')
 const path = require('path')
 const updateNotifier = require('update-notifier');
-const initTemplate = require('../lib/commands/init')
+const initTemplate = require('../lib/commands/create')
 const addTemplate = require('../lib/commands/add')
 const listTemplate = require('../lib/commands/list')
 const deleteTemplate = require('../lib/commands/delete')
@@ -77,15 +77,15 @@ program.on('command:*', function () {
 });
 
 
-process.on('uncaughtException', function (err) {
+process.on('uncaughtException', handleError);
+
+process.on('unhandledRejection', handleError);
+
+function handleError(err) {
   console.log(err);
   checkLatestVersion();
-});
-
-process.on('unhandledRejection', function (err) {
-  console.log(err);
   process.exit(1)
-});
+}
 
 function help() {
   checkLatestVersion();
