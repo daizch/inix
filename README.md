@@ -32,27 +32,36 @@ $ inix create ~/demo/template
 ## Commands
 
 ### inix create
+You can create your project from local template. 
 
-You can create your project from local template
 ```bash
 $ inix create <target>
 ```
 
-example 
+The directory structure of template should be like:
 
-```bash
-$ inix create ~/demo/template
+```html
+- root
+  - template
+  - meta.js
 ```
 
 
-By default, it will show all existing boilerplates you can use when you.
+For example, if the path of your template is ~/inix/root, then you can run:
+
+```bash
+$ inix create ~/inix/root
+```
+
+
+By default, it will show all existing boilerplates that you can use when you run:
 
 ```bash
 $ inix create 
 ```
 
 ### inix config
-Config the template records which can be used by ``inix create``
+Config the template records which could be used to create new project by ``inix create``
 
 use local path to setup template records
 
@@ -60,7 +69,7 @@ use local path to setup template records
 $ inix config ~/demo/template.json
 ```
 
-or use a remote url
+or use a remote config file by url
 
 ```bash
 $ inix config http://xxx.xxx.com/path/template.json
@@ -73,7 +82,7 @@ Add new boilerplate into your template list, then you can use it when you run ``
 $ inix add
 ```
 
-It will let you input some properties about the new boilerplate, like name, description and boilerplate location(local path or git repo). If it is a git repo, maybe you should input the branch name as well.
+It will let you input some properties about the new boilerplate, like name, description and boilerplate location(local path or git repo). If it is a git repo, you could input the branch name as well.
 
 
 ### inix del
