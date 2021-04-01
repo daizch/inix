@@ -9,7 +9,7 @@
     "template",
     "boilerplate"
   ],
-  "script": {},
+  "scripts": {},
   "bin": {
     "inix": "bin/inix.js"
   },
