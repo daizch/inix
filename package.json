@@ -1,6 +1,6 @@
 {
   "name": "inix",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "init whatever you want",
   "keywords": [
     "init",
@@ -9,39 +9,54 @@
     "template",
     "boilerplate"
   ],
-  "script": {},
+  "scripts": {
+    "start": "tsc --watch",
+    "build": "tsc",
+    "prepublishOnly": "yarn install && yarn build"
+  },
   "bin": {
     "inix": "bin/inix.js"
   },
   "author": "zechengdai",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "license": "MIT",
   "engines": {
-    "node": ">=8"
+    "node": ">=14"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/daizch/inix.git"
   },
+  "devDependencies": {
+    "@types/async": "^3.2.12",
+    "@types/cli-table": "^0.3.0",
+    "@types/consolidate": "^0.14.1",
+    "@types/fs-extra": "^9.0.13",
+    "@types/inquirer": "^8.1.3",
+    "@types/is-git-url": "^1.0.0",
+    "@types/is-valid-path": "^0.1.0",
+    "@types/metalsmith": "^2.3.0",
+    "@types/tmp": "^0.2.3",
+    "typescript": "^4.3.4"
+  },
   "dependencies": {
-    "async": "^3.1.0",
-    "chalk": "^2.4.2",
-    "cli-table": "^0.3.1",
-    "commander": "^2.20.0",
-    "consolidate": "^0.15.1",
-    "cosmiconfig": "^5.2.1",
-    "download-git-repo": "^2.0.0",
-    "ejs": "^2.6.2",
-    "fs-extra": "^8.0.1",
-    "inquirer": "^6.4.1",
+    "async": "^3.2.0",
+    "chalk": "^5.0.0",
+    "cli-table": "^0.3.10",
+    "commander": "^8.3.0",
+    "consolidate": "^0.16.0",
+    "cosmiconfig": "^7.0.0",
+    "ejs": "^3.1.6",
+    "fs-extra": "^10.0.0",
+    "inquirer": "^8.2.0",
     "is-git-url": "^1.0.0",
     "is-local-path": "^0.1.6",
     "is-valid-path": "^0.1.1",
     "metalsmith": "^2.3.0",
     "node-wget": "^0.4.3",
-    "ora": "^3.4.0",
-    "tmp": "^0.1.0",
-    "update-notifier": "^3.0.0",
-    "user-home": "^2.0.0"
+    "ora": "^6.0.1",
+    "tmp": "^0.2.1",
+    "update-notifier": "^5.1.0"
   }
 }

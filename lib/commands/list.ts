@@ -1,7 +1,7 @@
-const Table = require("cli-table");
-const { getTemplateRecords } = require("../utils");
+import Table from "cli-table"
+import { getTemplateRecords } from "../utils"
 
-module.exports = async function() {
+export default async function() {
   const records = Object.values(getTemplateRecords());
   if (records && records.length) {
     const table = new Table({
