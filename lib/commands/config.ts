@@ -4,10 +4,9 @@ import { execSync } from "child_process";
 import { updateTemplateData } from "../utils";
 import isGitUrl from "is-git-url";
 import isValidPath from "is-valid-path";
+import download from "download";
 // @ts-ignore: no types
 import isLocalPath from "is-local-path";
-// @ts-ignore: no types
-import wget from "node-wget";
 import tmp from "tmp";
 import inquirer from "inquirer";
 import logger from "../logger";
@@ -57,12 +56,7 @@ export default async function (tplConfigPath: string) {
     }
   } else {
     let tmpFile = tmp.fileSync().name;
-    wget({ url: tplConfigPath, dest: tmpFile }, function (error: string) {
-      if (error) {
-        throw new Error(error);
-      }
-
-      save(tmpFile);
-    });
+    fs.writeFileSync(tmpFile, await download(tplConfigPath));
+    save(tmpFile);
   }
-};
+}
