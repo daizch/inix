@@ -15,7 +15,7 @@ export const getTemplateRecords = function () {
   }
 };
 
-export const updateTemplateData = function (tplData) {
+export const updateTemplateData = function (tplData: any) {
   if (typeof tplData === "object") {
     tplData = JSON.stringify(tplData, null, 2);
   }

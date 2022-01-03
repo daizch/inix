@@ -4,13 +4,15 @@ import { execSync } from "child_process";
 import { updateTemplateData } from "../utils";
 import isGitUrl from "is-git-url";
 import isValidPath from "is-valid-path";
+// @ts-ignore: no types
 import isLocalPath from "is-local-path";
+// @ts-ignore: no types
 import wget from "node-wget";
 import tmp from "tmp";
 import inquirer from "inquirer";
 import logger from "../logger";
 
-function save(file) {
+function save(file: string) {
   try {
     let config = fs.readJsonSync(file);
     inquirer

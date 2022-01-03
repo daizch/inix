@@ -1,18 +1,17 @@
-import chalk from "chalk";
-const prefix = require("../package.json").name;
+const chalk = require("chalk");
+const prefix = 'inix';
 
 const loggerFormat = function (level: string, label: string) {
   return function (message: string) {
-    var colors = {
+    var colors: Record<string, string> = {
       info: "white",
       warn: "yellowBright",
       error: "redBright",
       success: "green",
     };
+    const color = colors[level];
     console.log(
-      `[${chalk.gray(label)}] ${chalk[colors[level]](level)}: ${chalk[
-        colors[level]
-      ](message)}`
+      `[${chalk.gray(label)}] ${chalk[color](level)}: ${chalk[color](message)}`
     );
   };
 };
@@ -33,4 +32,4 @@ const error = function (msg: any) {
 const fatal = error;
 const success = logger.success;
 
-export { log, info, warn, error, fatal, success };
+export default { log, info, warn, error, fatal, success };

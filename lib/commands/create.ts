@@ -1,21 +1,37 @@
 import chalk from "chalk";
 import fs from "fs";
 import Metalsmith from "metalsmith";
-import inquirer from "inquirer";
+import inquirer, { Question, ListQuestion, Answers } from "inquirer";
 import ora from "ora";
 import { ejs } from "consolidate";
 import path from "path";
 import async from "async";
 import logger from "../logger";
-import cosmiconfig from "cosmiconfig";
+import { cosmiconfigSync } from "cosmiconfig";
 import { getTemplateRecords, downloadRepo } from "../utils";
 import tmp from "tmp";
 import isGitUrl from "is-git-url";
 
 const render = ejs.render;
-function getOptions(tplPath: string) {
+interface ProjectOption {
+  templatePath: string;
+  tplPath: string;
+  destPath: string;
+  answers?: Answers;
+}
+
+interface MetaData {
+  destPath?: string;
+}
+
+interface MetaConfig {
+  questions?: Array<any>;
+  endCallback?: (data: MetaData, { chalk, logger, files }: any) => void;
+}
+
+function getOptions(tplPath: string): { config?: MetaConfig } {
   const moduleName = "meta";
-  const explorer = cosmiconfig("meta-config", {
+  const explorer = cosmiconfigSync("meta-config", {
     searchPlaces: [
       // 'package.json',
       `.${moduleName}rc`,
@@ -26,7 +42,7 @@ function getOptions(tplPath: string) {
       `${moduleName}.js`,
     ],
   });
-  return explorer.searchSync(tplPath) || {};
+  return explorer.search(tplPath) || {};
 }
 
 function copyTo(src: string, dest: string, done: () => void) {
@@ -41,14 +57,14 @@ function copyTo(src: string, dest: string, done: () => void) {
     });
 }
 
-function initProject(config) {
+function initProject(config: ProjectOption) {
   const metaOpts = getOptions(config.tplPath);
   runMetalsmith(config, metaOpts.config || {});
 }
 
-function runMetalsmith(config, metaOpts) {
+function runMetalsmith(config: ProjectOption, metaOpts: MetaConfig) {
   const metalsmith = Metalsmith(path.join(config.tplPath, "template"));
-  const metaData = metalsmith.metadata();
+  const metaData: MetaData = metalsmith.metadata();
 
   const questions = metaOpts && metaOpts.questions;
   //resolve the output destination path
@@ -61,7 +77,7 @@ function runMetalsmith(config, metaOpts) {
   metalsmith
     .use(askQuestions(questions))
     .use(resolveMetaData(config))
-    .use(renderTemplateFiles(config));
+    .use(renderTemplateFiles());
 
   metalsmith
     .clean(false)
@@ -79,38 +95,50 @@ function runMetalsmith(config, metaOpts) {
     });
 }
 
-function resolveMetaData(config) {
-  return (files, metalsmith, done) => {
-    var metaData = metalsmith.metadata();
+function resolveMetaData(config: ProjectOption) {
+  return (
+    files: Metalsmith.Files,
+    metalsmith: Metalsmith,
+    done: Metalsmith.Callback
+  ) => {
+    const metaData: { answers?: any } = metalsmith.metadata();
 
     Object.assign(metaData.answers, config.answers);
 
-    done();
+    done(null, files, metalsmith);
   };
 }
 
 //Metalsmith plugin
-function askQuestions(questions) {
-  return (files, metalsmith, done) => {
-    var metadata = metalsmith.metadata();
+function askQuestions(questions: Array<Question>) {
+  return (
+    files: Metalsmith.Files,
+    metalsmith: Metalsmith,
+    done: Metalsmith.Callback
+  ) => {
+    var metadata: { answers?: any } = metalsmith.metadata();
 
     if (!questions || !questions.length) {
       metadata.answers = {};
-      return done();
+      return done(null, files, metalsmith);
     }
 
     inquirer.prompt(questions).then((answers) => {
       metadata.answers = answers;
-      done();
+      done(null, files, metalsmith);
     });
   };
 }
 
 //Metalsmith plugin
 function renderTemplateFiles() {
-  return (files, metalsmith, done) => {
+  return (
+    files: Metalsmith.Files,
+    metalsmith: Metalsmith,
+    done: Metalsmith.Callback
+  ) => {
     const keys = Object.keys(files);
-    const metaData = metalsmith.metadata();
+    const metaData: { answers?: any } = metalsmith.metadata();
 
     async.each(
       keys,
@@ -125,12 +153,13 @@ function renderTemplateFiles() {
           next();
         });
       },
+      //@ts-ignore
       done
     );
   };
 }
 
-function loadRepository(tpl) {
+function loadRepository(tpl: string) {
   return new Promise((resolve, reject) => {
     const dest = tmp.dirSync().name;
     if (isGitUrl(tpl)) {
@@ -149,14 +178,13 @@ function loadRepository(tpl) {
   });
 }
 
-async function resolveOption(opts) {
-  opts = opts || {};
-  const questions = [
+async function resolveOption(opts: ProjectOption) {
+  const questions: Array<Question|ListQuestion> = [
     {
       type: "input",
       message: "folder name",
       name: "projectName",
-      validate: function (val) {
+      validate: function (val: string) {
         const reg = /[a-zA-Z0-9\-_]+/;
         if (!val) {
           return "please input your project name";
@@ -208,7 +236,7 @@ async function resolveOption(opts) {
   return opts;
 }
 
-export default async function (opts) {
+export default async function (opts: ProjectOption) {
   opts = await resolveOption(opts);
 
   if (!opts) return;
@@ -217,4 +245,4 @@ export default async function (opts) {
   Object.assign(opts, { tplPath });
 
   initProject(opts);
-};
+}
