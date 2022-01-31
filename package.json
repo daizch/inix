@@ -1,6 +1,6 @@
 {
   "name": "inix",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "init whatever you want",
   "keywords": [
     "init",
@@ -18,8 +18,8 @@
     "inix": "dist/bin/inix.js"
   },
   "author": "zechengdai",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/lib/index.js",
+  "typings": "dist/lib/index.d.ts",
   "license": "MIT",
   "engines": {
     "node": ">=14"

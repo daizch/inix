@@ -13,23 +13,26 @@ import tmp from "tmp";
 import isGitUrl from "is-git-url";
 
 const render = ejs.render;
-interface ProjectOption {
-  templatePath: string;
-  tplPath: string;
-  destPath: string;
-  answers?: Answers;
+export interface CreationOption {
+  projectName?: string;
+  templatePath: string; //the path of the template(gitUrl or local path)
+  projectTemplatePath?: string; //the local path of the boilerplate
+  destPath?: string;
+  data?: Answers;
 }
 
-interface MetaData {
-  destPath?: string;
+interface CallbackParams {
+  destPath: string;
+  answers: Answers;
+  data?: Answers;
 }
 
 interface MetaConfig {
   questions?: Array<any>;
-  endCallback?: (data: MetaData, { chalk, logger, files }: any) => void;
+  endCallback?: (data: CallbackParams, { chalk, logger, files }: any) => void;
 }
 
-function getOptions(tplPath: string): { config?: MetaConfig } {
+function getOptions(projectTemplatePath: string): { config?: MetaConfig } {
   const moduleName = "meta";
   const explorer = cosmiconfigSync("meta-config", {
     searchPlaces: [
@@ -42,7 +45,7 @@ function getOptions(tplPath: string): { config?: MetaConfig } {
       `${moduleName}.js`,
     ],
   });
-  return explorer.search(tplPath) || {};
+  return explorer.search(projectTemplatePath) || {};
 }
 
 function copyTo(src: string, dest: string, done: () => void) {
@@ -57,27 +60,24 @@ function copyTo(src: string, dest: string, done: () => void) {
     });
 }
 
-function initProject(config: ProjectOption) {
-  const metaOpts = getOptions(config.tplPath);
+function initProject(config: CreationOption) {
+  const metaOpts = getOptions(config.projectTemplatePath);
   runMetalsmith(config, metaOpts.config || {});
 }
 
-function runMetalsmith(config: ProjectOption, metaOpts: MetaConfig) {
-  const metalsmith = Metalsmith(path.join(config.tplPath, "template"));
-  const metaData: MetaData = metalsmith.metadata();
+function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
+  const metalsmith = Metalsmith(
+    path.join(config.projectTemplatePath, "template")
+  );
+  const metaData: any = metalsmith.metadata();
 
   const questions = metaOpts && metaOpts.questions;
   //resolve the output destination path
-  Object.assign(metaData, {
-    destPath: config.destPath
-      ? config.destPath
-      : path.join(process.cwd(), config.answers.projectName || ""),
-  });
+  metaData.destPath = config.destPath
+    ? path.resolve(config.destPath)
+    : path.join(process.cwd(), config.data.projectName || "");
 
-  metalsmith
-    .use(askQuestions(questions))
-    .use(resolveMetaData(config))
-    .use(renderTemplateFiles());
+  metalsmith.use(askQuestions(questions, config)).use(renderTemplateFiles());
 
   metalsmith
     .clean(false)
@@ -88,6 +88,8 @@ function runMetalsmith(config: ProjectOption, metaOpts: MetaConfig) {
 
       if (typeof metaOpts.endCallback === "function") {
         const helpers = { chalk, logger, files };
+        //@ts-ignore alias
+        metaData.answers = metaData.data;
         metaOpts.endCallback(metaData, helpers);
       } else {
         logger.success("init success");
@@ -95,36 +97,25 @@ function runMetalsmith(config: ProjectOption, metaOpts: MetaConfig) {
     });
 }
 
-function resolveMetaData(config: ProjectOption) {
-  return (
-    files: Metalsmith.Files,
-    metalsmith: Metalsmith,
-    done: Metalsmith.Callback
-  ) => {
-    const metaData: { answers?: any } = metalsmith.metadata();
-
-    Object.assign(metaData.answers, config.answers);
-
-    done(null, files, metalsmith);
-  };
-}
-
 //Metalsmith plugin
-function askQuestions(questions: Array<Question>) {
+function askQuestions(questions: Array<Question>, config: CreationOption) {
   return (
     files: Metalsmith.Files,
     metalsmith: Metalsmith,
     done: Metalsmith.Callback
   ) => {
-    var metadata: { answers?: any } = metalsmith.metadata();
+    var metadata: { data?: Answers } = metalsmith.metadata();
 
-    if (!questions || !questions.length) {
-      metadata.answers = {};
-      return done(null, files, metalsmith);
-    }
-
-    inquirer.prompt(questions).then((answers) => {
-      metadata.answers = answers;
+    new Promise((resolve) => {
+      if (config.data) {
+        resolve(config.data);
+      } else if (!questions || !questions.length) {
+        resolve({});
+      } else {
+        inquirer.prompt(questions).then(resolve);
+      }
+    }).then((data) => {
+      metadata.data = data;
       done(null, files, metalsmith);
     });
   };
@@ -138,13 +129,13 @@ function renderTemplateFiles() {
     done: Metalsmith.Callback
   ) => {
     const keys = Object.keys(files);
-    const metaData: { answers?: any } = metalsmith.metadata();
+    const metaData: { data?: any } = metalsmith.metadata();
 
     async.each(
       keys,
       (key, next) => {
         const str = files[key].contents.toString();
-        render(str, metaData.answers, (err, res) => {
+        render(str, metaData.data, (err, res) => {
           if (err) {
             err.message = `[${key}] ${err.message}`;
             return next(err);
@@ -178,8 +169,8 @@ function loadRepository(tpl: string) {
   });
 }
 
-async function resolveOption(opts: ProjectOption) {
-  const questions: Array<Question|ListQuestion> = [
+async function resolveOption(opts: CreationOption) {
+  const questions: Array<Question | ListQuestion> = [
     {
       type: "input",
       message: "folder name",
@@ -219,7 +210,7 @@ async function resolveOption(opts: ProjectOption) {
   }
 
   const answers = await inquirer.prompt(questions);
-  opts.answers = answers;
+  opts.data = answers;
   let tplInfo = tplsMap[answers.template];
   let templatePath;
 
@@ -236,13 +227,17 @@ async function resolveOption(opts: ProjectOption) {
   return opts;
 }
 
-export default async function (opts: ProjectOption) {
+export default async function (opts: CreationOption) {
   opts = await resolveOption(opts);
 
   if (!opts) return;
 
-  const tplPath = await loadRepository(opts.templatePath);
-  Object.assign(opts, { tplPath });
+  createApp(opts);
+}
+
+export async function createApp(opts: CreationOption) {
+  const projectTemplatePath = await loadRepository(opts.templatePath);
+  Object.assign(opts, { projectTemplatePath });
 
   initProject(opts);
 }

@@ -28,6 +28,16 @@ createilize your project with someone local template or remote git repo
 $ inix create ~/demo/template
 ```
 
+## API
+```js
+import { createApp } from "inix/dist/lib/commands/create";
+
+createApp({
+  templatePath: "/Users/xxx/xxx/template",
+  data: { //data for template to render if any in terms of meta.js
+  },
+});
+```
 
 ## Commands
 
