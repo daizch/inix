@@ -30,3 +30,8 @@ export const downloadRepo = function (gitUrl: string, tmpDir: string) {
   });
   return tmpDir;
 };
+
+export function isGitUrl(gitUrl:string) {
+  var regex = /(?:git|ssh|https?|git(lab)?@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/;
+  return regex.test(gitUrl);
+};

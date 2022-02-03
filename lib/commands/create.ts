@@ -10,7 +10,7 @@ import logger from "../logger";
 import { cosmiconfigSync } from "cosmiconfig";
 import { getTemplateRecords, downloadRepo } from "../utils";
 import tmp from "tmp";
-import isGitUrl from "is-git-url";
+import { isGitUrl } from "../utils";
 
 const render = ejs.render;
 export interface CreationOption {
