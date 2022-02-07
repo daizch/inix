@@ -44,11 +44,11 @@
   },
   "dependencies": {
     "async": "^3.2.0",
-    "chalk": "^4.0.0",
+    "picocolors": "^1.0.0",
     "cli-table": "^0.3.10",
     "commander": "^8.3.0",
     "consolidate": "^0.16.0",
-    "cosmiconfig": "^7.0.0",
+    "joycon": "^3.1.0",
     "download": "^8.0.0",
     "ejs": "^3.1.6",
     "fs-extra": "^10.0.0",
@@ -57,7 +57,7 @@
     "is-local-path": "^0.1.6",
     "is-valid-path": "^0.1.1",
     "metalsmith": "^2.3.0",
-    "ora": "^5.0.0",
+    "nanospinner": "^1.0.0",
     "tmp": "^0.2.1",
     "update-notifier": "^5.1.0"
   }

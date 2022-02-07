@@ -1,4 +1,4 @@
-const chalk = require("chalk");
+import pc from 'picocolors'
 const prefix = 'inix';
 
 const loggerFormat = function (level: string, label: string) {
@@ -10,9 +10,8 @@ const loggerFormat = function (level: string, label: string) {
       success: "green",
     };
     const color = colors[level];
-    console.log(
-      `[${chalk.gray(label)}] ${chalk[color](level)}: ${chalk[color](message)}`
-    );
+    //@ts-ignore
+    console.log(`[${pc.gray(label)}] ${pc[color](level)}: ${pc[color](message)}`);
   };
 };
 
@@ -27,7 +26,7 @@ const log = logger.info;
 const info = log;
 const warn = logger.warn;
 const error = function (msg: any) {
-  logger.error(chalk.red(JSON.stringify(msg)));
+  logger.error(pc.red(JSON.stringify(msg)));
 };
 const fatal = error;
 const success = logger.success;

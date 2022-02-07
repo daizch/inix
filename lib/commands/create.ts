@@ -2,12 +2,12 @@ import chalk from "chalk";
 import fs from "fs";
 import Metalsmith from "metalsmith";
 import inquirer, { Question, ListQuestion, Answers } from "inquirer";
-import ora from "ora";
+import { createSpinner } from "nanospinner";
 import { ejs } from "consolidate";
 import path from "path";
 import async from "async";
 import logger from "../logger";
-import { cosmiconfigSync } from "cosmiconfig";
+import JoyCon from "joycon";
 import { getTemplateRecords, downloadRepo } from "../utils";
 import tmp from "tmp";
 import { isGitUrl } from "../utils";
@@ -33,20 +33,21 @@ interface MetaConfig {
   endCallback?: (data: CallbackParams, { chalk, logger, files }: any) => void;
 }
 
-function getOptions(projectTemplatePath: string): { config?: MetaConfig } {
+async function getOptions(
+  projectTemplatePath: string
+): Promise<{ config?: MetaConfig }> {
+  const joycon = new JoyCon({ cwd: projectTemplatePath });
   const moduleName = "meta";
-  const explorer = cosmiconfigSync("meta-config", {
-    searchPlaces: [
-      // 'package.json',
-      `.${moduleName}rc`,
-      `.${moduleName}.json`,
-      `.${moduleName}.yaml`,
-      `.${moduleName}.yml`,
-      `.${moduleName}.js`,
-      `${moduleName}.js`,
-    ],
-  });
-  return explorer.search(projectTemplatePath) || {};
+  const config = (await joycon.load([
+    // 'package.json',
+    `.${moduleName}rc`,
+    `.${moduleName}.json`,
+    `.${moduleName}.yaml`,
+    `.${moduleName}.yml`,
+    `.${moduleName}.js`,
+    `${moduleName}.js`,
+  ]));
+  return { config: config.data ?? {} };
 }
 
 function copyTo(src: string, dest: string, done: () => void) {
@@ -61,8 +62,9 @@ function copyTo(src: string, dest: string, done: () => void) {
     });
 }
 
-function initProject(config: CreationOption) {
-  const metaOpts = getOptions(config.projectTemplatePath);
+async function initProject(config: CreationOption) {
+  const metaOpts = await getOptions(config.projectTemplatePath);
+  console.log("metaOpts", metaOpts);
   runMetalsmith(config, metaOpts.config || {});
 }
 
@@ -155,8 +157,7 @@ function loadRepository(tpl: string) {
   return new Promise((resolve, reject) => {
     const dest = tmp.dirSync().name;
     if (isGitUrl(tpl)) {
-      const spinner = ora("downloading template");
-      spinner.start();
+      const spinner = createSpinner("downloading template").start();
       downloadRepo(tpl, dest);
       spinner.stop();
       resolve(dest);
@@ -233,13 +234,13 @@ export default async function (opts: CreationOption) {
 
   if (!opts) return;
 
-  opts.shouldAskQuestions = true
-  createApp(opts);
+  opts.shouldAskQuestions = true;
+  await createApp(opts);
 }
 
 export async function createApp(opts: CreationOption) {
   const projectTemplatePath = await loadRepository(opts.templatePath);
   Object.assign(opts, { projectTemplatePath });
 
-  initProject(opts);
+  await initProject(opts);
 }
