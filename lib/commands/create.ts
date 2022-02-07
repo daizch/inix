@@ -1,11 +1,10 @@
-import chalk from "chalk";
+import picocolors from "picocolors";
 import fs from "fs";
 import Metalsmith from "metalsmith";
 import inquirer, { Question, ListQuestion, Answers } from "inquirer";
 import { createSpinner } from "nanospinner";
 import { ejs } from "consolidate";
 import path from "path";
-import async from "async";
 import logger from "../logger";
 import JoyCon from "joycon";
 import { getTemplateRecords, downloadRepo } from "../utils";
@@ -30,15 +29,16 @@ interface CallbackParams {
 
 interface MetaConfig {
   questions?: Array<any>;
-  endCallback?: (data: CallbackParams, { chalk, logger, files }: any) => void;
+  endCallback?: (
+    data: CallbackParams,
+    { chalk: picocolors, logger, files }: any
+  ) => void;
 }
 
-async function getOptions(
-  projectTemplatePath: string
-): Promise<{ config?: MetaConfig }> {
+async function getOptions(projectTemplatePath: string): Promise<MetaConfig> {
   const joycon = new JoyCon({ cwd: projectTemplatePath });
   const moduleName = "meta";
-  const config = (await joycon.load([
+  const config = await joycon.load([
     // 'package.json',
     `.${moduleName}rc`,
     `.${moduleName}.json`,
@@ -46,8 +46,8 @@ async function getOptions(
     `.${moduleName}.yml`,
     `.${moduleName}.js`,
     `${moduleName}.js`,
-  ]));
-  return { config: config.data ?? {} };
+  ]);
+  return config.data ?? {};
 }
 
 function copyTo(src: string, dest: string, done: () => void) {
@@ -64,8 +64,8 @@ function copyTo(src: string, dest: string, done: () => void) {
 
 async function initProject(config: CreationOption) {
   const metaOpts = await getOptions(config.projectTemplatePath);
-  console.log("metaOpts", metaOpts);
-  runMetalsmith(config, metaOpts.config || {});
+
+  runMetalsmith(config, metaOpts);
 }
 
 function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
@@ -76,7 +76,7 @@ function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
 
   const questions = metaOpts && metaOpts.questions;
   config.data = config.data ?? {};
-  
+
   //resolve the output destination path
   metaData.destPath = config.destPath
     ? path.resolve(config.destPath)
@@ -92,7 +92,7 @@ function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
       if (err) throw err;
 
       if (typeof metaOpts.endCallback === "function") {
-        const helpers = { chalk, logger, files };
+        const helpers = { chalk: picocolors, logger, files };
         //@ts-ignore alias
         metaData.answers = metaData.data;
         metaOpts.endCallback(metaData, helpers);
@@ -136,22 +136,21 @@ function renderTemplateFiles() {
     const keys = Object.keys(files);
     const metaData: { data?: any } = metalsmith.metadata();
 
-    async.each(
-      keys,
-      (key, next) => {
+    const promises = keys.map((key) => {
+      return new Promise((resolve, reject) => {
         const str = files[key].contents.toString();
         render(str, metaData.data, (err, res) => {
           if (err) {
             err.message = `[${key}] ${err.message}`;
-            return next(err);
+            return reject(err);
           }
           files[key].contents = Buffer.from(res);
-          next();
+          resolve(true);
         });
-      },
-      //@ts-ignore
-      done
-    );
+      });
+    });
+    
+    Promise.all(promises).then(() => done(null, files, metalsmith));
   };
 }
 
@@ -161,7 +160,7 @@ function loadRepository(tpl: string) {
     if (isGitUrl(tpl)) {
       const spinner = createSpinner("downloading template").start();
       downloadRepo(tpl, dest);
-      spinner.stop();
+      spinner.success();
       resolve(dest);
     } else if (fs.existsSync(tpl)) {
       copyTo(tpl, dest, () => {
@@ -227,7 +226,7 @@ async function resolveOption(opts: CreationOption) {
     }
   }
   opts.templatePath = templatePath;
-  
+
   return opts;
 }
 
