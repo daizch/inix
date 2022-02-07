@@ -19,6 +19,7 @@ export interface CreationOption {
   projectTemplatePath?: string; //the local path of the boilerplate
   destPath?: string;
   data?: Answers;
+  shouldAskQuestions?: boolean;
 }
 
 interface CallbackParams {
@@ -107,12 +108,12 @@ function askQuestions(questions: Array<Question>, config: CreationOption) {
     var metadata: { data?: Answers } = metalsmith.metadata();
 
     new Promise((resolve) => {
-      if (config.data) {
-        resolve(config.data);
+      if (config.shouldAskQuestions) {
+        inquirer.prompt(questions).then(resolve);
       } else if (!questions || !questions.length) {
         resolve({});
       } else {
-        inquirer.prompt(questions).then(resolve);
+        resolve(config.data);
       }
     }).then((data) => {
       metadata.data = data;
@@ -232,6 +233,7 @@ export default async function (opts: CreationOption) {
 
   if (!opts) return;
 
+  opts.shouldAskQuestions = true
   createApp(opts);
 }
 
