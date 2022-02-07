@@ -75,6 +75,8 @@ function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
   const metaData: any = metalsmith.metadata();
 
   const questions = metaOpts && metaOpts.questions;
+  config.data = config.data ?? {};
+  
   //resolve the output destination path
   metaData.destPath = config.destPath
     ? path.resolve(config.destPath)
@@ -117,8 +119,8 @@ function askQuestions(questions: Array<Question>, config: CreationOption) {
       } else {
         resolve(config.data);
       }
-    }).then((data) => {
-      metadata.data = data;
+    }).then((data: any) => {
+      metadata.data = { ...config.data, ...data };
       done(null, files, metalsmith);
     });
   };
@@ -225,7 +227,7 @@ async function resolveOption(opts: CreationOption) {
     }
   }
   opts.templatePath = templatePath;
-
+  
   return opts;
 }
 
