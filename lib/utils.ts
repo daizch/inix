@@ -22,16 +22,22 @@ export const updateTemplateData = function (tplData: any) {
   fs.writeFileSync(tplPath, tplData);
 };
 
-export const downloadRepo = function (gitUrl: string, tmpDir: string) {
+export const downloadRepo = function (
+  gitUrl: string,
+  tmpDir: string,
+  gitCloneCommand: string
+) {
   tmpDir = tmpDir || tmp.dirSync().name;
-  execSync(`git clone --quiet ${gitUrl} ${tmpDir}`, {
+  const command = gitCloneCommand || `git clone --quiet ${gitUrl} ${tmpDir}`;
+  execSync(command, {
     env: process.env,
     cwd: process.cwd(),
   });
   return tmpDir;
 };
 
-export function isGitUrl(gitUrl:string) {
-  var regex = /(?:git|ssh|https?|git(lab)?@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/;
+export function isGitUrl(gitUrl: string) {
+  var regex =
+    /(?:git|ssh|https?|git(lab)?@[-\w.]+):(\/\/)?(.*?)(\.git)(\/?|\#[-\d\w._]+?)$/;
   return regex.test(gitUrl);
-};
+}
