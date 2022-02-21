@@ -28,8 +28,8 @@ export const downloadRepo = function (
   gitCloneCommand: string
 ) {
   tmpDir = tmpDir || tmp.dirSync().name;
-  const command = gitCloneCommand || `git clone --quiet ${gitUrl} ${tmpDir}`;
-  execSync(command, {
+  const cloneCommand = `${gitCloneCommand} || git clone --quiet ${gitUrl}`;
+  execSync(`${cloneCommand} ${tmpDir}`, {
     env: process.env,
     cwd: process.cwd(),
   });
