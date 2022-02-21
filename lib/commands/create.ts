@@ -19,6 +19,7 @@ export interface CreationOption {
   destPath?: string;
   data?: Answers;
   shouldAskQuestions?: boolean;
+  gitCloneCommand?: string;
 }
 
 interface CallbackParams {
@@ -149,17 +150,17 @@ function renderTemplateFiles() {
         });
       });
     });
-    
+
     Promise.all(promises).then(() => done(null, files, metalsmith));
   };
 }
 
-function loadRepository(tpl: string) {
+function loadRepository(tpl: string, gitCloneCommand: string) {
   return new Promise((resolve, reject) => {
     const dest = tmp.dirSync().name;
     if (isGitUrl(tpl)) {
       const spinner = createSpinner("downloading template").start();
-      downloadRepo(tpl, dest);
+      downloadRepo(tpl, dest, gitCloneCommand);
       spinner.success();
       resolve(dest);
     } else if (fs.existsSync(tpl)) {
@@ -240,7 +241,10 @@ export default async function (opts: CreationOption) {
 }
 
 export async function createApp(opts: CreationOption) {
-  const projectTemplatePath = await loadRepository(opts.templatePath);
+  const projectTemplatePath = await loadRepository(
+    opts.templatePath,
+    opts.gitCloneCommand
+  );
   Object.assign(opts, { projectTemplatePath });
 
   await initProject(opts);
