@@ -20,6 +20,7 @@ export interface CreationOption {
   data?: Answers;
   shouldAskQuestions?: boolean;
   gitCloneCommand?: string;
+  done?: ()=>void;
 }
 
 interface CallbackParams {
@@ -97,6 +98,7 @@ function runMetalsmith(config: CreationOption, metaOpts: MetaConfig) {
         //@ts-ignore alias
         metaData.answers = metaData.data;
         metaOpts.endCallback(metaData, helpers);
+        config.done && config.done();
       } else {
         logger.success("init success");
       }
